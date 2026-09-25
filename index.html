@@ -121,24 +121,28 @@
   .tl-bubble text{fill:var(--paper);font-size:10.5px;font-family:var(--sans)}
 
   /* ===== 理念滚动场景 ===== */
-  .scene{position:relative;height:320vh}
-  .scene-pin{
-    position:sticky;top:0;height:100vh;overflow:hidden;
-    display:flex;align-items:center;
-    background:linear-gradient(180deg, #14110C, #18140D 40%, #14110C);
-  }
+  .scene{position:relative;padding:96px 0;background:linear-gradient(180deg,#14110C,#18140D 40%,#14110C)}
+  .scene-pin{display:flex;align-items:center}
   .scene-inner{width:100%}
   .scene-head{text-align:center;max-width:720px;margin:0 auto 40px}
   .scene-head .kicker{color:var(--accent);font-size:14px;letter-spacing:.2em;margin-bottom:16px}
   .scene-head h2{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25}
-  .scene-diagram{position:relative;max-width:960px;margin:0 auto;border:1px solid var(--line);border-radius:20px;background:#16130C;padding:26px 30px}
-  .scene-diagram svg{display:block;width:100%;height:auto}
-  .scene-steps{position:absolute;left:50%;transform:translateX(-50%);bottom:26px;max-width:640px;width:calc(100% - 60px)}
+  .scene-diagram{position:relative;max-width:960px;margin:0 auto;border:1px solid var(--line);border-radius:20px;background:#16130C;padding:26px 30px 40px;outline:none}
+  .scene-diagram:focus-visible{border-color:var(--accent)}
+  .scene-diagram > svg{display:block;width:100%;height:auto}
+  .scene-hint{text-align:center;color:var(--dim);font-size:12.5px;margin:18px 0 14px;white-space:nowrap}
+  .scene-hint svg{display:inline;vertical-align:-3px;margin-right:6px}
+  .scene-dots{display:flex;justify-content:center;gap:9px}
+  .scene-dots button{width:9px;height:9px;border-radius:50%;border:1px solid var(--accent);background:transparent;padding:0;cursor:pointer;transition:background .25s,width .25s,border-radius .25s;min-height:0}
+  .scene-dots button.on{background:var(--accent);width:24px;border-radius:5px}
+  .scene-dots button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .scene-steps{position:relative;max-width:640px;margin:0 auto;min-height:30px}
   .scene-step{
     position:absolute;left:0;right:0;top:0;text-align:center;
-    opacity:0;transition:opacity .35s;
+    opacity:0;transition:opacity .35s;cursor:pointer;
     color:var(--paper-2);font-size:15px;
   }
+  .scene-step:hover{color:var(--paper)}
   .scene-step strong{color:var(--paper);font-family:var(--serif);font-weight:600}
   .flow-line{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:6 7}
   .flow-a{stroke:#8A7F68}
@@ -246,20 +250,19 @@
     .reveal,.hero h1 .hl>span,.tl-node,.tl-bubble,.hero .reveal{opacity:1 !important;transform:none !important;transition:none !important}
     .stage-card .tag i{animation:none}
     .scene-step{opacity:0 !important}
-    .scene-step[data-step="2"]{opacity:1 !important}
-    .pkt{opacity:0 !important}
+    .scene-step[data-step="0"]{opacity:1 !important}
+    .pkt{opacity:.95 !important;transform:none !important}
   }
   html.no-gsap .hero h1 .hl>span,html.no-gsap .tl-node,html.no-gsap .tl-bubble,html.no-gsap .hero .reveal{opacity:1 !important;transform:none !important}
   html.no-gsap .scene-step{opacity:0 !important}
   html.no-gsap .scene-step[data-step="0"]{opacity:1 !important}
-  html.no-gsap .pkt{opacity:0 !important}
+  html.no-gsap .pkt{opacity:.95 !important;transform:none !important}
 
   /* ===== 响应式 ===== */
   @media (max-width:920px){
     .hero .wrap{grid-template-columns:1fr;gap:40px}
     .hero{padding:140px 0 72px}
     .nav{gap:14px}.nav a{font-size:13px}.nav-cta{display:none}
-    .scene-pin{height:100vh}
   }
   @media (max-width:720px){
     .feat-grid,.dl-grid,.comp-grid{grid-template-columns:1fr}
@@ -272,9 +275,9 @@
     .nav{margin-left:auto;gap:6px}
     .nav a{padding:10px 8px;min-height:44px;display:inline-flex;align-items:center}
     footer .links a{padding:8px 10px;min-height:44px;display:inline-flex;align-items:center}
-    .scene-diagram{padding:16px 14px;border-radius:14px}
-    .scene-steps{bottom:14px;width:calc(100% - 28px)}
+    .scene-diagram{padding:16px 14px 30px;border-radius:14px}
     .scene-step{font-size:13.5px}
+    .scene-hint{font-size:11.5px;margin:14px 0 12px}
     .proof{flex-direction:column;gap:6px;padding:22px 24px}
   }
 </style>
@@ -392,7 +395,7 @@
           <div class="kicker">理念</div>
           <h2>你的对话，<br>该由谁记住？</h2>
         </div>
-        <div class="scene-diagram">
+        <div class="scene-diagram" tabindex="0" role="group" aria-label="理念演示：三幕，可在框内用滚轮或方向键切换">
           <svg viewBox="0 0 900 380" role="img" aria-label="本地优先与云端保存的对比">
             <!-- 左栏：云端 AI -->
             <text x="230" y="42" text-anchor="middle" class="diag-title">普通 AI 助手</text>
@@ -419,7 +422,13 @@
               <rect class="pkt b" x="664" y="222" width="12" height="12" rx="2" opacity="0"/>
             </g>
           </svg>
-          <div class="scene-steps">
+          <div class="scene-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9l7-7 7 7"/><path d="M12 2v13"/></svg>在这个框内滚动，切换三幕；滑到末尾再继续滚动页面</div>
+          <div class="scene-dots" role="tablist" aria-label="理念三幕">
+            <button data-step="0" role="tab" aria-selected="true" aria-label="第 1 幕 · 数据流向" class="on"></button>
+            <button data-step="1" role="tab" aria-selected="false" aria-label="第 2 幕 · 记忆归属"></button>
+            <button data-step="2" role="tab" aria-selected="false" aria-label="第 3 幕 · 可核对"></button>
+          </div>
+          <div class="scene-steps" aria-live="polite">
             <div class="scene-step" data-step="0" style="opacity:1"><strong>第 1 幕 · 数据流向</strong>——普通助手把对话送上云端，续境让数据停在本机。</div>
             <div class="scene-step" data-step="1" style="opacity:0"><strong>第 2 幕 · 记忆归属</strong>——你的经历属于你，而不是某一家公司的服务器。</div>
             <div class="scene-step" data-step="2" style="opacity:0"><strong>第 3 幕 · 可核对</strong>——每条记忆保留来源，你可以纠正、可以删除、可以带走。</div>
@@ -882,25 +891,85 @@
       });
     });
 
-    /* --- 理念：滚动叙事（pin + scrub）--- */
-    var steps = gsap.utils.toArray('.scene-step');
-    var st = gsap.timeline({
-      scrollTrigger: {
-        trigger:'#scene', start:'top top', end:'+=230%', scrub:.55,
-        onUpdate: function(self){
-          var p = self.progress;
-          var idx = p < .34 ? 0 : (p < .68 ? 1 : 2);
-          steps.forEach(function(s, i){ s.style.opacity = (i === idx) ? 1 : 0; });
-        }
-      }
-    });
-    st.fromTo('.flow-a', {strokeDashoffset:0}, {strokeDashoffset:-300, duration:1, ease:'none'}, 0)
-      .fromTo('.pkt.a', {opacity:0, y:278}, {opacity:.95, y:186, duration:1, ease:'none'}, 0)
-      .fromTo('.flow-b', {strokeDashoffset:0}, {strokeDashoffset:-300, duration:1, ease:'none'}, 0)
-      .fromTo('.pkt.b', {opacity:0, y:278}, {opacity:.95, y:206, duration:1, ease:'none'}, 0);
   } else if(hasGsap && reduced){
     gsap.set('.hl>span', {y:0});
     gsap.set('.tl-node,.tl-bubble', {opacity:1});
+  }
+
+  /* ===== 理念：框内滑动切换三幕（不干扰页面滚动，所有环境可用）===== */
+  var sceneSteps = Array.prototype.slice.call(document.querySelectorAll('.scene-step'));
+  var sceneDots = Array.prototype.slice.call(document.querySelectorAll('.scene-dots button'));
+  var diagram = document.querySelector('.scene-diagram');
+  var cur = 0;
+  var useAnim = hasGsap && !reduced;
+
+  function setStep(i){
+    if(i < 0 || i > 2 || i === cur) return;
+    cur = i;
+    sceneSteps.forEach(function(s, k){
+      if(useAnim){ gsap.to(s, {opacity:(k === cur)?1:0, duration:.35, ease:'power2.out'}); }
+      else { s.style.opacity = (k === cur) ? 1 : 0; }
+    });
+    sceneDots.forEach(function(d, k){
+      d.classList.toggle('on', k === cur);
+      d.setAttribute('aria-selected', k === cur ? 'true' : 'false');
+    });
+  }
+
+  sceneDots.forEach(function(d){
+    d.addEventListener('click', function(){ setStep(parseInt(d.getAttribute('data-step'),10)); });
+  });
+  sceneSteps.forEach(function(s){
+    s.addEventListener('click', function(){ setStep(parseInt(s.getAttribute('data-step'),10)); });
+  });
+
+  /* 滚轮：框内拦截切幕；到首尾继续同向滚动时放行给页面 */
+  var acc = 0;
+  diagram.addEventListener('wheel', function(e){
+    var dir = e.deltaY > 0 ? 1 : -1;
+    var allowed = dir > 0 ? cur < 2 : cur > 0;
+    if(!allowed) return;
+    e.preventDefault();
+    acc += Math.abs(e.deltaY);
+    if(acc > 80){ acc = 0; setStep(cur + dir); }
+  }, {passive:false});
+
+  /* 键盘：方向键切幕 */
+  diagram.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowDown'){ e.preventDefault(); setStep(cur + 1); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); setStep(cur - 1); }
+  });
+
+  /* 触摸：框内纵向滑动切幕，首尾放行页面 */
+  var touchY = null;
+  diagram.addEventListener('touchstart', function(e){ touchY = e.touches[0].clientY; }, {passive:true});
+  diagram.addEventListener('touchmove', function(e){
+    if(touchY === null) return;
+    var dy = touchY - e.touches[0].clientY;
+    var dir = dy > 0 ? 1 : -1;
+    var allowed = dir > 0 ? cur < 2 : cur > 0;
+    if(!allowed || Math.abs(dy) < 12) return;
+    touchY = e.touches[0].clientY;
+    e.preventDefault();
+    setStep(cur + dir);
+  }, {passive:false});
+  diagram.addEventListener('touchend', function(){ touchY = null; }, {passive:true});
+
+  /* 场景图入场：数据流动走一次 */
+  if(useAnim){
+    var diagIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          gsap.timeline()
+            .fromTo('.flow-a', {strokeDashoffset:0}, {strokeDashoffset:-300, duration:1.4, ease:'none'}, 0)
+            .fromTo('.pkt.a', {opacity:0, y:278}, {opacity:.95, y:186, duration:1.4, ease:'none'}, 0)
+            .fromTo('.flow-b', {strokeDashoffset:0}, {strokeDashoffset:-300, duration:1.4, ease:'none'}, 0)
+            .fromTo('.pkt.b', {opacity:0, y:278}, {opacity:.95, y:206, duration:1.4, ease:'none'}, 0);
+          diagIO.disconnect();
+        }
+      });
+    }, {threshold:.35});
+    diagIO.observe(diagram);
   }
 })();
 </script>
