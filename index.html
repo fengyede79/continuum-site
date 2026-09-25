@@ -69,11 +69,14 @@
     padding:13px 24px;font-size:15px;font-family:var(--sans);
     cursor:pointer;transition:background .18s,border-color .18s,transform .18s;
     background:transparent;color:var(--paper);
+    position:relative;overflow:hidden;
   }
   .btn:hover{transform:translateY(-1px)}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#1A1509;font-weight:600}
   .btn-primary:hover{background:var(--accent-2)}
   .btn-ghost:hover{border-color:var(--accent);color:var(--accent-2)}
+  .ripple{position:absolute;border-radius:50%;background:rgba(234,224,198,.25);transform:scale(0);animation:ripple .55s ease-out forwards;pointer-events:none}
+  @keyframes ripple{to{transform:scale(2.6);opacity:0}}
 
   /* ===== Hero ===== */
   .hero{padding:172px 0 96px;position:relative;overflow:hidden}
@@ -87,14 +90,6 @@
   .hero h1 em{font-style:normal;color:var(--accent)}
   .hero .lead{color:var(--paper-2);font-size:17px;margin-top:26px;max-width:480px}
   .hero .cta-row{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
-  .hero .facts{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
-    background:var(--line);border:1px solid var(--line);border-radius:12px;
-    overflow:hidden;margin-top:48px;
-  }
-  .hero .fact{background:var(--bg-soft);padding:18px 20px}
-  .hero .fact b{display:block;font-family:var(--serif);font-size:22px;color:var(--paper)}
-  .hero .fact span{font-size:13px;color:var(--dim)}
 
   /* hero 记忆时间线舞台 */
   .hero-stage{position:relative}
@@ -115,11 +110,13 @@
   .stage-card .tag i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2.6s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
   .tl-line{fill:none;stroke:url(#lineGrad);stroke-width:2;stroke-linecap:round}
-  .tl-node{opacity:0}
-  .tl-node circle{fill:var(--bg);stroke:var(--accent);stroke-width:1.6}
+  .tl-node{opacity:0;cursor:pointer}
+  .tl-node circle{fill:var(--bg);stroke:var(--accent);stroke-width:1.6;transition:stroke-width .2s}
+  .tl-node:hover circle{stroke-width:2.6}
+  .tl-node:focus-visible circle{stroke-width:2.6}
   .tl-node .core{fill:var(--accent);stroke:none}
-  .tl-node .lbl{fill:var(--paper-2);font-size:11px;font-family:var(--sans)}
-  .tl-bubble{opacity:0}
+  .tl-node .lbl{fill:var(--paper-2);font-size:11px;font-family:var(--sans);pointer-events:none}
+  .tl-bubble{opacity:0;pointer-events:none}
   .tl-bubble .bub{fill:#26200F;stroke:rgba(200,162,78,.5);stroke-width:1;rx:8}
   .tl-bubble text{fill:var(--paper);font-size:10.5px;font-family:var(--sans)}
 
@@ -161,6 +158,25 @@
   .feat h3{font-family:var(--serif);font-weight:700;font-size:21px;margin:10px 0 10px}
   .feat p{color:var(--paper-2);font-size:14.5px}
   .feat .ic{display:inline-flex;margin-top:16px;color:var(--accent)}
+
+  /* ===== 常驻陪伴 ===== */
+  .companion{position:relative}
+  .comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
+  .comp-card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:32px;position:relative;overflow:hidden}
+  .comp-card::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 90% 0%, rgba(200,162,78,.09), transparent 60%)}
+  .comp-card .k{font-family:var(--serif);font-weight:700;font-size:22px;position:relative}
+  .comp-card .k em{font-style:normal;color:var(--accent)}
+  .comp-card p{color:var(--paper-2);font-size:14.5px;margin-top:12px;position:relative}
+  .comp-card ul{list-style:none;margin-top:18px;display:grid;gap:9px;position:relative}
+  .comp-card li{display:flex;gap:10px;color:var(--paper-2);font-size:14px}
+  .comp-card li svg{flex:none;margin-top:3px;color:var(--accent)}
+  .proof{border:1px solid rgba(200,162,78,.4);border-radius:14px;background:linear-gradient(180deg,#1D1810,#19150D);padding:26px 30px;display:flex;gap:22px;align-items:flex-start}
+  .proof .qmark{font-family:var(--serif);font-size:38px;line-height:1;color:var(--accent);flex:none;margin-top:-6px}
+  .proof blockquote{color:var(--paper-2);font-size:14.5px}
+  .proof blockquote strong{color:var(--paper);font-family:var(--serif);font-weight:600}
+  .proof .src{display:block;color:var(--dim);font-size:12.5px;margin-top:12px}
+  .underline-note{border-top:1px solid var(--line);margin-top:28px;padding-top:20px;color:var(--dim);font-size:13.5px;display:flex;flex-wrap:wrap;gap:8px 26px}
+  .underline-note b{color:var(--paper-2);font-weight:500}
 
   /* ===== 时间轴 ===== */
   .timeline{display:grid;grid-template-columns:110px 34px 1fr;row-gap:30px;max-width:760px}
@@ -246,13 +262,12 @@
     .scene-pin{height:100vh}
   }
   @media (max-width:720px){
-    .feat-grid,.dl-grid{grid-template-columns:1fr}
+    .feat-grid,.dl-grid,.comp-grid{grid-template-columns:1fr}
     .price-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
     .topbar .wrap{height:auto;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
     .topbar{position:static}
     .hero{padding:64px 0 64px}
     .section{padding:64px 0}
-    .facts{grid-template-columns:1fr 1fr}
     .timeline{grid-template-columns:74px 30px 1fr}
     .nav{margin-left:auto;gap:6px}
     .nav a{padding:10px 8px;min-height:44px;display:inline-flex;align-items:center}
@@ -260,6 +275,7 @@
     .scene-diagram{padding:16px 14px;border-radius:14px}
     .scene-steps{bottom:14px;width:calc(100% - 28px)}
     .scene-step{font-size:13.5px}
+    .proof{flex-direction:column;gap:6px;padding:22px 24px}
   }
 </style>
 </head>
@@ -296,22 +312,17 @@
           <span class="hl"><span>把记忆留在本地，</span></span>
           <span class="hl"><span>让对话<em>延续下去</em></span></span>
         </h1>
-        <p class="lead reveal">续境是本地保存的个人智能体。它记住你们聊过的每一件事——带来源、可修订，围绕时间线、复盘与目标，帮你延续自己的经历与计划。</p>
+        <p class="lead reveal">续境是一个住在你电脑里的智能体：它记得聊过的每一件事，会在合适的时机主动提起相关的事；每条记忆都带来源、可以修订，帮你延续自己的经历与计划。</p>
         <div class="cta-row reveal">
           <a class="btn btn-primary" href="#/download" data-nav="download">下载续境</a>
           <a class="btn btn-ghost" href="#/pricing" data-nav="pricing">了解定价</a>
-        </div>
-        <div class="facts reveal">
-          <div class="fact"><b>本地优先</b><span>对话与记忆保存在本机</span></div>
-          <div class="fact"><b>双端</b><span>Windows 桌面与 Android</span></div>
-          <div class="fact"><b>自带密钥</b><span>BYOK，模型由你选择</span></div>
         </div>
       </div>
 
       <!-- 记忆时间线动画舞台 -->
       <div class="hero-stage reveal">
         <div class="stage-card">
-          <svg viewBox="0 0 520 470" role="img" aria-label="记忆时间线：从今天的对话回溯到五年前的记忆">
+          <svg viewBox="0 0 520 470" role="img" aria-label="记忆时间线：对话持续沉淀为可召回的记忆">
             <defs>
               <linearGradient id="lineGrad" x1="0" y1="1" x2="1" y2="0">
                 <stop offset="0" stop-color="#8A7F68"/>
@@ -326,40 +337,40 @@
             <path class="tl-line" d="M 62 440 C 130 420 150 360 210 330 C 270 300 300 240 355 205 C 400 176 410 130 455 92"/>
 
             <!-- 气泡 -->
-            <g class="tl-bubble" data-i="0"><rect class="bub" x="330" y="132" width="150" height="30"/><text x="405" y="152" text-anchor="middle">“五年前那个约定”</text></g>
-            <g class="tl-bubble" data-i="1"><rect class="bub" x="280" y="166" width="150" height="30"/><text x="355" y="186" text-anchor="middle">“三年前开始跑步”</text></g>
-            <g class="tl-bubble" data-i="2"><rect class="bub" x="225" y="204" width="150" height="30"/><text x="300" y="224" text-anchor="middle">“去年搬家的决定”</text></g>
+            <g class="tl-bubble" data-i="0"><rect class="bub" x="330" y="132" width="150" height="30"/><text x="405" y="152" text-anchor="middle">“最初是怎么定的”</text></g>
+            <g class="tl-bubble" data-i="1"><rect class="bub" x="280" y="166" width="150" height="30"/><text x="355" y="186" text-anchor="middle">“更早开始的那件事”</text></g>
+            <g class="tl-bubble" data-i="2"><rect class="bub" x="225" y="204" width="150" height="30"/><text x="300" y="224" text-anchor="middle">“之前商量过的决定”</text></g>
             <g class="tl-bubble" data-i="3"><rect class="bub" x="135" y="296" width="150" height="30"/><text x="210" y="316" text-anchor="middle">“那本书读完了”</text></g>
             <g class="tl-bubble" data-i="4"><rect class="bub" x="95" y="342" width="150" height="30"/><text x="170" y="362" text-anchor="middle">“你提过的新想法”</text></g>
             <g class="tl-bubble" data-i="5"><rect class="bub" x="52" y="404" width="150" height="30"/><text x="127" y="424" text-anchor="middle">“下周二的计划”</text></g>
 
             <!-- 节点 -->
-            <g class="tl-node" data-i="0">
+            <g class="tl-node" data-i="0" role="button" tabindex="0" aria-label="召回记忆：最初是怎么定的">
               <circle cx="455" cy="92" r="12" fill="none" stroke="#C8A24E" opacity=".35" filter="url(#soft)"/>
               <circle cx="455" cy="92" r="5.5" class="core"/>
-              <text x="455" y="118" text-anchor="middle" class="lbl">五年前</text>
+              <text x="455" y="118" text-anchor="middle" class="lbl">最初</text>
             </g>
-            <g class="tl-node" data-i="1">
+            <g class="tl-node" data-i="1" role="button" tabindex="0" aria-label="召回记忆：更早开始的那件事">
               <circle cx="355" cy="205" r="11" fill="none" stroke="#C8A24E" opacity=".3" filter="url(#soft)"/>
               <circle cx="355" cy="205" r="5" class="core"/>
-              <text x="355" y="250" text-anchor="middle" class="lbl">三年前</text>
+              <text x="355" y="250" text-anchor="middle" class="lbl">更早</text>
             </g>
-            <g class="tl-node" data-i="2">
+            <g class="tl-node" data-i="2" role="button" tabindex="0" aria-label="召回记忆：之前商量过的决定">
               <circle cx="300" cy="240" r="11" fill="none" stroke="#C8A24E" opacity=".3" filter="url(#soft)"/>
               <circle cx="300" cy="240" r="5" class="core"/>
-              <text x="300" y="264" text-anchor="middle" class="lbl">去年</text>
+              <text x="245" y="264" text-anchor="middle" class="lbl">之前</text>
             </g>
-            <g class="tl-node" data-i="3">
+            <g class="tl-node" data-i="3" role="button" tabindex="0" aria-label="召回记忆：那本书读完了">
               <circle cx="210" cy="330" r="11" fill="none" stroke="#C8A24E" opacity=".3" filter="url(#soft)"/>
               <circle cx="210" cy="330" r="5" class="core"/>
-              <text x="245" y="354" text-anchor="middle" class="lbl">上月</text>
+              <text x="245" y="354" text-anchor="middle" class="lbl">上周</text>
             </g>
-            <g class="tl-node" data-i="4">
+            <g class="tl-node" data-i="4" role="button" tabindex="0" aria-label="召回记忆：你提过的新想法">
               <circle cx="140" cy="378" r="11" fill="none" stroke="#C8A24E" opacity=".3" filter="url(#soft)"/>
               <circle cx="140" cy="378" r="5" class="core"/>
-              <text x="140" y="402" text-anchor="middle" class="lbl">上周</text>
+              <text x="140" y="402" text-anchor="middle" class="lbl">昨天</text>
             </g>
-            <g class="tl-node" data-i="5">
+            <g class="tl-node" data-i="5" role="button" tabindex="0" aria-label="召回记忆：下周二的计划">
               <circle cx="62" cy="440" r="12" fill="none" stroke="#C8A24E" opacity=".35" filter="url(#soft)"/>
               <circle cx="62" cy="440" r="5.5" class="core"/>
               <text x="62" y="462" text-anchor="middle" class="lbl">今天</text>
@@ -367,7 +378,7 @@
 
             <text x="500" y="455" fill="#8A7F68" font-size="11" font-family="var(--sans)" text-anchor="end">记忆 · 示意</text>
           </svg>
-          <div class="tag"><i></i> 每次对话都沉淀为可召回的记忆，从今天回到五年前</div>
+          <div class="tag"><i></i> 点击时间线上的记忆节点，召回过一条记忆</div>
         </div>
       </div>
     </div>
@@ -418,6 +429,46 @@
     </div>
   </div>
 
+  <section class="section companion">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">常驻陪伴</div>
+        <h2>它会主动开口，先说和你有关系的事</h2>
+        <p>不是每句话都追问你——它常驻在托盘里，在合适的时候，把相关的事带到你面前。</p>
+      </div>
+      <div class="comp-grid">
+        <article class="comp-card reveal">
+          <div class="k">住在<em>托盘</em>里，随时回来</div>
+          <p>关掉窗口，它就安静地待在托盘；点击图标，同一窗口回来。主动联系默认关闭——是否开启、什么时候开口，由你决定。</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>托盘常驻，同窗口恢复，退出即停</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>可暂停主动联系，登录启动独立开关</li>
+          </ul>
+        </article>
+        <article class="comp-card reveal">
+          <div class="k">开口前，先<em>翻一翻记忆</em></div>
+          <p>它的主动开场由你的近期对话、结构化记忆与关注的主题组装而成——说的是和你有关的事，不是无关推送。</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>主题由你选（工具更新、项目相关等来源）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>不合适它会跳过，不硬聊；休息时安静不追发</li>
+          </ul>
+        </article>
+      </div>
+      <div class="proof reveal">
+        <span class="qmark">“</span>
+        <blockquote>
+          一次真实闭环已在测试中跑通：<strong>官方来源 → 相关开场 → 你的反馈 → 落为记忆证据 → 重启后仍在</strong>。主动请求只带固定项目路径，不带你的原话与背景；六小时最多开口一次。
+          <span class="src">—— 2026-09-16 常驻与公共话题验收记录（合成档案实测）</span>
+        </blockquote>
+      </div>
+      <div class="underline-note reveal">
+        <span><b>双端共享核心</b>：Windows 桌面 · Android（开发中）</span>
+        <span><b>BYOK 自带密钥</b>：模型由你选择，续境不计量不收费</span>
+        <span><b>游客可用</b>：无需注册，下载即用</span>
+      </div>
+    </div>
+  </section>
+
   <div class="section features">
     <div class="wrap">
       <div class="sec-head">
@@ -428,26 +479,26 @@
       <div class="feat-grid">
         <article class="feat reveal">
           <div class="num">01</div>
-          <h3>长期记忆</h3>
-          <p>本地语义检索（ONNX 嵌入模型），对话档案经 GB 级语料验证，旧事随时可召回，不必反复交代前情。</p>
+          <h3>对话不断线</h3>
+          <p>回到电脑前，接着上次聊。长时间使用与重启恢复已经过验证，对话不会因为中断而丢失。</p>
           <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2-3 2V5z"/></svg></span>
         </article>
         <article class="feat reveal">
           <div class="num">02</div>
-          <h3>来源与修订</h3>
-          <p>每条记忆保留来源，你可以纠正、管理自己的资料。记忆不是黑盒，是你可以核对和改写的记录。</p>
+          <h3>每条记忆带来源</h3>
+          <p>记忆不是黑盒：每条都保留来源，你可以纠正、删除、管理自己的资料——它是你可以核对和改写的记录。</p>
           <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
         </article>
         <article class="feat reveal">
           <div class="num">03</div>
-          <h3>本地优先</h3>
-          <p>对话、记忆与私人经历保存在你自己的设备上。服务端只承载账号、会话与权益元数据，不建聊天内容表。</p>
+          <h3>本地语义检索</h3>
+          <p>ONNX 嵌入模型在本地做语义检索，旧事随时召回，不必反复交代前情；对话与记忆保存在你自己的设备上。</p>
           <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg></span>
         </article>
         <article class="feat reveal">
           <div class="num">04</div>
-          <h3>双端，模型自选</h3>
-          <p>Windows 桌面与 Android 共享同一套核心。自带 API Key（BYOK），DeepSeek、通义等模型由你决定。</p>
+          <h3>简短、分条的回复</h3>
+          <p>回复形态经过研究落地：先答重点，简短分条，不绕弯、不套话。</p>
           <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg></span>
         </article>
       </div>
@@ -507,7 +558,7 @@
       <div class="sec-head" style="margin-bottom:0">
         <div class="kicker">获取续境</div>
         <h2>下载</h2>
-        <p>当前提供 Windows 桌面测试版；Android 安装包与正式分发通道整理中。所有版本均为本地优先，无需注册也能先用自带密钥体验。</p>
+        <p>当前为 Windows 桌面 Pre 测试通道；Android 构建与设备测试已通过，分发准备中。所有版本均为本地优先：无需注册，游客模式可直接配置自带密钥使用。</p>
       </div>
     </div>
   </div>
@@ -517,26 +568,26 @@
       <div class="dl-grid">
         <article class="card reveal">
           <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8A24E" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>Windows 桌面版</h3>
-          <div class="ver">Pre 测试版 · 构建 da73423 · 2026-09-21</div>
-          <p>真实桌面应用：核心以 Kotlin/JVM 运行，界面为 React。包含本地语义记忆、BYOK 模型接入与桌面数据空间。</p>
+          <div class="ver">Pre 测试通道 · 构建 da73423 · 2026-09-21 完成真实启动验证</div>
+          <p>Windows 原生桌面应用：核心以 Kotlin/JVM 运行，界面为 React。已包含本地语义记忆、BYOK 模型接入、桌面数据空间与常驻托盘。</p>
           <ul class="meta">
             <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>系统要求：Windows 10 及以上，x64</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>首次使用需在设置中配置模型与 API Key</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>安装包未签名，Windows 会提示未知发布者，可校验校验和</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>连接模型后才可以开始对话：需在设置中配置 API Key</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>测试版登录入口默认关闭，游客模式可直接使用</li>
           </ul>
-          <button class="btn btn-primary" data-toast="Windows 安装包正在整理，稍后开放下载">下载 Windows 版</button>
+          <button class="btn btn-primary" data-toast="Pre 测试包目前仅作本机验证，公开下载正在整理">下载 Windows 版</button>
         </article>
 
         <article class="card reveal">
           <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8A24E" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>Android 版</h3>
-          <div class="ver">构建与分发准备中</div>
-          <p>与桌面端共享同一 Kotlin/Compose 核心，同一套记忆与协议。正式发布将通过应用商店与官网两个渠道。</p>
+          <div class="ver">本地构建与设备测试已通过；分发准备中</div>
+          <p>与桌面端共享同一 Kotlin/Compose 核心与协议。中文对话与 ONNX 本地记忆已在设备实测。正式发布将通过应用商店与官网两个渠道。</p>
           <ul class="meta">
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>系统要求：Android 8 及以上</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>系统要求：Android 8 及以上（API 26）</li>
             <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>与桌面端记忆格式兼容，可迁移</li>
             <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>商店上架需软件著作权备案，正在办理</li>
           </ul>
-          <button class="btn" data-toast="Android 版构建中，敬请期待">Android 版 · 敬请期待</button>
+          <button class="btn" data-toast="Android 分发整理中，暂未公开下载">Android 版 · 分发准备中</button>
         </article>
       </div>
 
@@ -555,7 +606,7 @@
       <div class="sec-head" style="margin-bottom:0">
         <div class="kicker">价格与计划</div>
         <h2>定价</h2>
-        <p>续境的核心能力始终免费：本地记忆、双端使用、自带密钥。订阅托管模型服务正在接入中，定价将在上线时公布。</p>
+        <p>续境的核心能力始终免费：本地记忆、自带密钥（BYOK）。Windows 桌面测试版已可用；订阅与托管模型服务正在开发中，定价上线时公布。</p>
       </div>
     </div>
   </div>
@@ -568,45 +619,45 @@
           <div class="p-price">¥0<small> / 永久</small></div>
           <div class="p-note">自带 API Key 即可完整使用</div>
           <ul>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>本地语义记忆，GB 级档案</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>Windows 桌面 + Android</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>本地语义记忆与时间线</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>Windows 桌面版（Pre 测试通道）</li>
             <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>BYOK：DeepSeek、通义等自选模型</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>无需注册，下载即用</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>无需注册，游客模式下载即用</li>
           </ul>
           <button class="btn btn-primary" data-toast="安装包整理中，即将开放下载">下载免费版</button>
         </div>
 
         <div class="price featured reveal">
-          <div class="pill">即将推出</div>
+          <div class="pill">开发中</div>
           <div class="p-name">Pro 订阅</div>
-          <div class="p-price">待定<small> / 月</small></div>
-          <div class="p-note">托管模型，开箱即用</div>
+          <div class="p-price">定价待公布</div>
+          <div class="p-note">邮箱账号与托管模型：接入中</div>
           <ul>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>无需配置 API Key，登录即用</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>邮箱账号与跨设备权益</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>用量计量与月度额度</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>记忆仍保存在本地设备</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>邮箱账号与跨设备权益（账号模型已集成，服务接入中）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>托管模型：无需自配 API Key（开发中）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>订阅支付与用量计量（规划中）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>记忆始终保存在本地设备</li>
           </ul>
-          <button class="btn" data-toast="订阅服务接入中，定价上线后开放">订阅 · 即将开放</button>
+          <button class="btn" data-toast="订阅服务开发中，上线时公布定价">订阅 · 开发中</button>
         </div>
 
         <div class="price reveal">
-          <div class="pill">路线图</div>
+          <div class="pill">规划中</div>
           <div class="p-name">自托管</div>
-          <div class="p-price">待定<small> / 月</small></div>
-          <div class="p-note">把服务部署到自己的服务器</div>
+          <div class="p-price">待公布</div>
+          <div class="p-note">服务端尚在本地回环运行阶段</div>
           <ul>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>continuum-cloud 服务端部署</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>自有模型网关与计量</li>
-            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>部署文档与迁移工具</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>continuum-cloud 服务端（当前仅本机回环运行）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>部署文档（编写中）</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>模型网关与计量（规划中）</li>
           </ul>
-          <button class="btn" data-toast="自托管部署文档正在编写">部署文档 · 编写中</button>
+          <button class="btn" data-toast="自托管部署文档编写中">部署文档 · 编写中</button>
         </div>
       </div>
 
       <div class="card reveal" style="margin-top:22px;max-width:760px">
         <h3>定价说明</h3>
-        <p>免费版的能力上限由你的模型服务商决定，续境不从中收费、也不计量。Pro 订阅的模型调用由续境代付并按用量计量，定价将覆盖模型成本；记忆、对话与私人资料在任何计划下都保存在本地设备。</p>
+        <p>免费版的能力上限由你的模型服务商决定，续境不从中收费、也不计量。账号与订阅服务正在开发中，上线时公布定价；任何计划下，对话与记忆都保存在本地设备。</p>
       </div>
     </div>
   </div>
@@ -775,7 +826,7 @@
   if(hasGsap && !reduced){
     gsap.registerPlugin(ScrollTrigger);
 
-    /* --- hero 记忆时间线 --- */
+    /* --- hero 记忆时间线（入场：简短） --- */
     var line = document.querySelector('.tl-line');
     var len = line.getTotalLength();
     gsap.set(line, {strokeDasharray: len, strokeDashoffset: len});
@@ -783,19 +834,52 @@
     gsap.set('.tl-bubble', {opacity:0});
 
     var tl = gsap.timeline({defaults:{ease:'expo.out'}});
-    tl.to('.hl>span', {y:0, duration:1, stagger:.14}, .1)
-      .to(line, {strokeDashoffset:0, duration:2.2, ease:'power2.inOut'}, .4)
-      .to('.tl-node', {opacity:1, duration:.55, stagger:.28}, .75)
-      .to('.tl-bubble', {opacity:1, duration:.5, stagger:.28, ease:'power2.out'}, 1.2)
-      .to('.tl-bubble', {opacity:.14, duration:1.1, stagger:.12, ease:'power2.inOut'}, 2.6)
-      .fromTo('.hero .reveal', {opacity:0, y:26}, {opacity:1, y:0, duration:.9, stagger:.1, ease:'expo.out'}, 1.5);
+    tl.to('.hl>span', {y:0, duration:.7, stagger:.09}, .05)
+      .to(line, {strokeDashoffset:0, duration:1.15, ease:'power2.inOut'}, .3)
+      .to('.tl-node', {opacity:1, duration:.35, stagger:.15}, .55)
+      .to('.tl-bubble', {opacity:1, duration:.32, stagger:.15, ease:'power2.out'}, .85)
+      .to('.tl-bubble', {opacity:.16, duration:.65, stagger:.07, ease:'power2.inOut'}, 1.45)
+      .fromTo('.hero .reveal', {opacity:0, y:22}, {opacity:1, y:0, duration:.6, stagger:.08, ease:'expo.out'}, .95);
 
-    /* 记忆被召回的循环：气泡依次亮起又静置 */
+    /* 记忆的呼吸：气泡轮流亮起又静置 */
     var bubbles = gsap.utils.toArray('.tl-bubble');
-    var cycle = gsap.timeline({repeat:-1, repeatDelay:1.6, delay:4.6});
+    var loops = [];
     bubbles.forEach(function(b, i){
-      cycle.to(b, {opacity:.95, duration:.7, ease:'power2.out'}, i * 1.1)
-           .to(b, {opacity:.14, duration:1.2, ease:'power2.inOut'}, i * 1.1 + .9);
+      var loop = gsap.to(b, {opacity:.88, duration:.6, ease:'power2.out', repeat:-1, yoyo:true, repeatDelay:2.6, delay:.9 + i * 1.35});
+      loops.push(loop);
+    });
+
+    /* 点击/键盘：召回一条记忆 */
+    gsap.utils.toArray('.tl-node').forEach(function(n){
+      var idx = n.getAttribute('data-i');
+      function recall(){
+        var b = document.querySelector('.tl-bubble[data-i="' + idx + '"]');
+        if(!b) return;
+        gsap.killTweensOf(b);
+        gsap.timeline()
+          .to(b, {opacity:1, y:-5, duration:.28, ease:'power2.out'})
+          .to(b, {opacity:.16, y:0, duration:.9, ease:'power2.inOut', delay:1.6})
+          .call(function(){ loops[idx].restart(true); });
+      }
+      n.addEventListener('click', recall);
+      n.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); recall(); }
+      });
+    });
+
+    /* 按钮点击涟漪 */
+    document.querySelectorAll('.btn').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        var r = document.createElement('span');
+        r.className = 'ripple';
+        var rect = btn.getBoundingClientRect();
+        var size = Math.max(rect.width, rect.height);
+        r.style.width = r.style.height = size + 'px';
+        r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        r.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(r);
+        setTimeout(function(){ r.remove(); }, 600);
+      });
     });
 
     /* --- 理念：滚动叙事（pin + scrub）--- */
