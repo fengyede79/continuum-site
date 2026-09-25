@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>续境 · Continuum Agent — 本地保存的个人智能体</title>
+<meta name="description" content="续境是本地保存的个人智能体：连续对话、长期记忆、时间线、复盘与目标跟踪。记忆保留来源和修订，你可以纠正和管理。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='4' fill='%2316130D' stroke='%23C8A24E' stroke-width='2.5'/%3E%3Ctext x='16' y='23' font-family='serif' font-size='19' font-weight='700' fill='%23E8DEC6' text-anchor='middle'%3E续%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#16130D;
+    --bg-soft:#1E1A11;
+    --card:#221D13;
+    --paper:#E8DEC6;
+    --paper-2:#C9BD9E;
+    --dim:#8C816A;
+    --accent:#C8A24E;
+    --accent-2:#E3C787;
+    --line:rgba(232,222,198,.13);
+    --serif:'Noto Serif SC','Songti SC','SimSun',serif;
+    --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{
+    background:var(--bg);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-weight:400;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  ::selection{background:rgba(200,162,78,.35)}
+
+  /* ===== 布局 ===== */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .section{padding:92px 0}
+  .sec-head{max-width:640px;margin-bottom:48px}
+  .sec-head .kicker{color:var(--accent);font-size:14px;letter-spacing:.18em;margin-bottom:14px}
+  .sec-head h2{font-family:var(--serif);font-weight:700;font-size:clamp(26px,4vw,36px);line-height:1.3}
+  .sec-head p{color:var(--paper-2);margin-top:12px;font-size:15px}
+
+  /* ===== 顶栏 ===== */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:rgba(22,19,13,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{display:flex;align-items:center;gap:28px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;font-size:18px;color:var(--paper)}
+  .brand svg{flex:none}
+  .nav{display:flex;gap:22px;margin-left:auto}
+  .nav a{
+    color:var(--paper-2);font-size:14px;padding:6px 2px;
+    border-bottom:2px solid transparent;
+  }
+  .nav a:hover{color:var(--paper);text-decoration:none}
+  .nav a.active{color:var(--paper);border-bottom-color:var(--accent)}
+  .nav-cta{
+    margin-left:6px;background:var(--accent);color:#1A1509 !important;
+    border-radius:999px;padding:8px 18px !important;font-weight:500;font-size:14px;
+    border-bottom:none !important;
+  }
+  .nav-cta:hover{background:var(--accent-2)}
+
+  /* ===== 按钮 ===== */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:10px;
+    padding:12px 22px;font-size:15px;font-family:var(--sans);
+    cursor:pointer;transition:background .18s,border-color .18s;
+    background:transparent;color:var(--paper);
+  }
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#1A1509;font-weight:600}
+  .btn-primary:hover{background:var(--accent-2)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent-2)}
+
+  /* ===== Hero ===== */
+  .hero{padding:170px 0 96px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .hero h1{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(34px,5.4vw,56px);line-height:1.22;
+    letter-spacing:.01em;
+  }
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero .lead{color:var(--paper-2);font-size:17px;margin-top:22px;max-width:480px}
+  .hero .cta-row{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap}
+  .hero .facts{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;margin-top:44px;
+  }
+  .hero .fact{background:var(--bg-soft);padding:18px 20px}
+  .hero .fact b{display:block;font-family:var(--serif);font-size:22px;color:var(--paper)}
+  .hero .fact span{font-size:13px;color:var(--dim)}
+  .hero-media{
+    position:relative;border-radius:16px;overflow:hidden;
+    border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  .hero-media img{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:16/9}
+  .hero-media .tag{
+    position:absolute;left:16px;bottom:16px;
+    background:rgba(22,19,13,.78);border:1px solid var(--line);
+    color:var(--paper-2);font-size:12px;padding:6px 12px;border-radius:999px;
+    letter-spacing:.06em;
+  }
+
+  /* ===== 特性 ===== */
+  .features{background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .feat{
+    border:1px solid var(--line);border-radius:14px;padding:28px 30px;
+    background:var(--card);transition:border-color .2s;
+  }
+  .feat:hover{border-color:rgba(200,162,78,.5)}
+  .feat .num{font-family:var(--serif);color:var(--accent);font-size:14px;letter-spacing:.12em}
+  .feat h3{font-family:var(--serif);font-weight:700;font-size:20px;margin:10px 0 10px}
+  .feat p{color:var(--paper-2);font-size:14.5px}
+  .feat .ic{display:inline-flex;margin-top:16px;color:var(--accent)}
+
+  /* ===== 时间轴 ===== */
+  .timeline{display:grid;grid-template-columns:110px 34px 1fr;row-gap:30px;max-width:760px}
+  .tl-time{font-family:var(--serif);color:var(--accent);font-size:14.5px;text-align:right;padding-top:2px}
+  .tl-axis{position:relative;display:flex;justify-content:center}
+  .tl-axis::before{
+    content:"";position:absolute;top:0;bottom:0;left:50%;
+    width:1px;background:var(--line);
+  }
+  .tl-dot{
+    width:11px;height:11px;border-radius:50%;background:var(--accent);
+    border:3px solid var(--bg);box-shadow:0 0 0 1px var(--accent);
+    justify-self:center;align-self:start;margin-top:4px;position:relative;z-index:1;
+  }
+  .tl-body{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:14px 18px}
+  .tl-body b{font-family:var(--serif);font-weight:600;font-size:15.5px}
+  .tl-body p{color:var(--paper-2);font-size:14px;margin-top:4px}
+
+  /* ===== 通用卡 / 下载 ===== */
+  .dl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:30px}
+  .card h3{font-family:var(--serif);font-weight:700;font-size:21px;display:flex;align-items:center;gap:10px}
+  .card .ver{color:var(--dim);font-size:13px;margin-top:6px}
+  .card p{color:var(--paper-2);font-size:14.5px;margin-top:12px}
+  .card .meta{list-style:none;margin:16px 0 22px;display:grid;gap:8px}
+  .card .meta li{display:flex;gap:10px;color:var(--paper-2);font-size:14px}
+  .card .meta svg{flex:none;margin-top:3px;color:var(--accent)}
+
+  /* ===== 定价 ===== */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
+  .price{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:30px;display:flex;flex-direction:column}
+  .price.featured{border-color:rgba(200,162,78,.6);box-shadow:0 0 0 1px rgba(200,162,78,.35)}
+  .price .p-name{font-family:var(--serif);font-weight:700;font-size:19px}
+  .price .p-price{font-family:var(--serif);font-size:30px;font-weight:700;margin:14px 0 2px;color:var(--paper)}
+  .price .p-price small{font-size:13px;color:var(--dim);font-weight:400}
+  .price .p-note{color:var(--dim);font-size:12.5px;margin-bottom:16px}
+  .price ul{list-style:none;display:grid;gap:9px;margin-bottom:24px}
+  .price li{display:flex;gap:10px;font-size:14px;color:var(--paper-2)}
+  .price li svg{flex:none;margin-top:3px;color:var(--accent)}
+  .price .btn{margin-top:auto;justify-content:center}
+  .price .pill{
+    align-self:flex-start;background:rgba(200,162,78,.14);color:var(--accent-2);
+    font-size:12px;padding:3px 10px;border-radius:999px;margin-bottom:12px;letter-spacing:.04em;
+  }
+
+  /* ===== 正文页（隐私/协议） ===== */
+  .prose{max-width:760px}
+  .prose h2{font-family:var(--serif);font-weight:700;font-size:26px;margin:42px 0 14px}
+  .prose h2:first-child{margin-top:0}
+  .prose h3{font-family:var(--serif);font-size:18px;margin:26px 0 10px}
+  .prose p{color:var(--paper-2);font-size:15px;margin-bottom:12px}
+  .prose ul{margin:8px 0 16px 22px;color:var(--paper-2);font-size:15px;display:grid;gap:6px}
+  .prose .stamp{
+    display:inline-block;border:1px solid var(--accent);color:var(--accent);
+    font-size:12px;padding:3px 12px;border-radius:999px;margin-bottom:22px;letter-spacing:.08em;
+  }
+
+  /* ===== 底部 CTA 与 footer ===== */
+  .cta-band{text-align:center;padding:96px 0;border-top:1px solid var(--line)}
+  .cta-band h2{font-family:var(--serif);font-weight:900;font-size:clamp(26px,4vw,38px)}
+  .cta-band p{color:var(--paper-2);margin:14px auto 30px;max-width:520px;font-size:15px}
+  .cta-band .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  footer{border-top:1px solid var(--line);padding:40px 0}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  footer .copy{color:var(--dim);font-size:13px}
+  footer .links{display:flex;gap:20px}
+  footer .links a{color:var(--paper-2);font-size:13px}
+
+  /* ===== toast ===== */
+  #toast{
+    position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);
+    background:var(--card);border:1px solid var(--accent);color:var(--paper);
+    padding:12px 22px;border-radius:10px;font-size:14px;opacity:0;
+    pointer-events:none;transition:opacity .25s,transform .25s;z-index:99;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ===== 响应式 ===== */
+  @media (max-width:920px){
+    .hero .wrap{grid-template-columns:1fr;gap:36px}
+    .hero{padding:140px 0 72px}
+    .nav{gap:14px}
+    .nav a{font-size:13px}
+    .nav-cta{display:none}
+  }
+  @media (max-width:720px){
+    .feat-grid,.dl-grid{grid-template-columns:1fr}
+    .price-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+    .topbar .wrap{height:auto;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+    .topbar{position:static}
+    .hero{padding:64px 0 64px}
+    .section{padding:64px 0}
+    .facts{grid-template-columns:1fr 1fr}
+    .timeline{grid-template-columns:74px 30px 1fr}
+    .nav{margin-left:auto;gap:6px}
+    .nav a{padding:10px 8px;min-height:44px;display:inline-flex;align-items:center}
+    footer .links a{padding:8px 10px;min-height:44px;display:inline-flex;align-items:center}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶栏 ===== -->
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#/home" data-nav="home">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="26" height="26" rx="4" stroke="#C8A24E" stroke-width="2.5"/>
+        <text x="16" y="23" font-family="serif" font-size="19" font-weight="700" fill="#E8DEC6" text-anchor="middle">续</text>
+      </svg>
+      续境
+    </a>
+    <nav class="nav">
+      <a href="#/home" data-nav="home">首页</a>
+      <a href="#/download" data-nav="download">下载</a>
+      <a href="#/pricing" data-nav="pricing">定价</a>
+      <a href="#/privacy" data-nav="privacy">隐私</a>
+      <a href="#/terms" data-nav="terms">协议</a>
+      <a href="#/download" class="nav-cta">下载续境</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ===== 视图：首页 ===== -->
+<section class="view" id="view-home">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>把记忆留在本地，<br>让对话<em>延续下去</em></h1>
+        <p class="lead">续境是本地保存的个人智能体。它记住你们聊过的每一件事——带来源、可修订，围绕时间线、复盘与目标，帮你延续自己的经历与计划。</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#/download" data-nav="download">下载续境</a>
+          <a class="btn btn-ghost" href="#/pricing" data-nav="pricing">了解定价</a>
+        </div>
+        <div class="facts">
+          <div class="fact"><b>本地优先</b><span>对话与记忆保存在本机</span></div>
+          <div class="fact"><b>双端</b><span>Windows 桌面与 Android</span></div>
+          <div class="fact"><b>自带密钥</b><span>BYOK，模型由你选择</span></div>
+        </div>
+      </div>
+      <div class="hero-media">
+        <img src="assets/hero.jpg" alt="记忆档案室：纸张悬浮于光线之间">
+        <div class="tag">记忆 · 卷宗 · 时间线</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">它是什么</div>
+        <h2>一本会生长的私人档案</h2>
+        <p>每一段对话都沉淀为可检索的记忆，每条记忆都记得自己从哪来、被谁改过。</p>
+      </div>
+      <div class="feat-grid">
+        <article class="feat">
+          <div class="num">01</div>
+          <h3>长期记忆</h3>
+          <p>本地语义检索（ONNX 嵌入模型），对话档案经 GB 级语料验证，旧事随时可召回，不必反复交代前情。</p>
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2-3 2V5z"/></svg></span>
+        </article>
+        <article class="feat">
+          <div class="num">02</div>
+          <h3>来源与修订</h3>
+          <p>每条记忆保留来源，你可以纠正、管理自己的资料。记忆不是黑盒，是你可以核对和改写的记录。</p>
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+        </article>
+        <article class="feat">
+          <div class="num">03</div>
+          <h3>本地优先</h3>
+          <p>对话、记忆与私人经历保存在你自己的设备上。服务端只承载账号、会话与权益元数据，不建聊天内容表。</p>
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg></span>
+        </article>
+        <article class="feat">
+          <div class="num">04</div>
+          <h3>双端，模型自选</h3>
+          <p>Windows 桌面与 Android 共享同一套核心。自带 API Key（BYOK），DeepSeek、通义等模型由你决定。</p>
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg></span>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">开发历程</div>
+        <h2>从原型到可安装的版本</h2>
+        <p>以下为公开的开发里程碑，均以项目验收记录为准。</p>
+      </div>
+      <div class="timeline">
+        <div class="tl-time">09-14</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>MVP 验收</b><p>核心对话、本地记忆与资料空间跑通，产品假设落地。</p></div>
+
+        <div class="tl-time">09-15</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>连续使用验证</b><p>长时间使用与重启恢复验证通过，连接与凭证链路修复。</p></div>
+
+        <div class="tl-time">09-16</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>桌面统一与常驻验收</b><p>Windows 桌面版本统一，常驻与公共话题能力交付。</p></div>
+
+        <div class="tl-time">09-20</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>账号与协议</b><p>账号模型、桌面数据空间与访客能力合入，协议契约化。</p></div>
+
+        <div class="tl-time">09-23</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>回复形态研究</b><p>简短、分条的回复形态落地，评测语料与测量工具入库。</p></div>
+
+        <div class="tl-time">09-24</div>
+        <div class="tl-axis"><span class="tl-dot"></span></div>
+        <div class="tl-body"><b>分支收敛</b><p>main 与 dev 对齐，Windows 原生开发入口全量切换完成。</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-band">
+    <div class="wrap">
+      <h2>从今天开始，让 AI 记住你</h2>
+      <p>下载续境，用自己的 API Key 立即开始；邮箱登录与订阅服务正在接入中。</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#/download" data-nav="download">下载续境</a>
+        <a class="btn btn-ghost" href="#/pricing" data-nav="pricing">查看定价</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 视图：下载 ===== -->
+<section class="view" id="view-download" hidden>
+  <div class="hero" style="padding-bottom:56px">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:0">
+        <div class="kicker">获取续境</div>
+        <h2>下载</h2>
+        <p>当前提供 Windows 桌面测试版；Android 安装包与正式分发通道整理中。所有版本均为本地优先，无需注册也能先用自带密钥体验。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:24px">
+    <div class="wrap">
+      <div class="dl-grid">
+        <article class="card">
+          <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8A24E" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>Windows 桌面版</h3>
+          <div class="ver">Pre 测试版 · 构建 da73423 · 2026-09-21</div>
+          <p>真实桌面应用：核心以 Kotlin/JVM 运行，界面为 React。包含本地语义记忆、BYOK 模型接入与桌面数据空间。</p>
+          <ul class="meta">
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>系统要求：Windows 10 及以上，x64</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>首次使用需在设置中配置模型与 API Key</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>安装包未签名，Windows 会提示未知发布者，可校验校验和</li>
+          </ul>
+          <button class="btn btn-primary" data-toast="Windows 安装包正在整理，稍后开放下载">下载 Windows 版</button>
+        </article>
+
+        <article class="card">
+          <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8A24E" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>Android 版</h3>
+          <div class="ver">构建与分发准备中</div>
+          <p>与桌面端共享同一 Kotlin/Compose 核心，同一套记忆与协议。正式发布将通过应用商店与官网两个渠道。</p>
+          <ul class="meta">
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>系统要求：Android 8 及以上</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>与桌面端记忆格式兼容，可迁移</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>商店上架需软件著作权备案，正在办理</li>
+          </ul>
+          <button class="btn" data-toast="Android 版构建中，敬请期待">Android 版 · 敬请期待</button>
+        </article>
+      </div>
+
+      <div class="card" style="margin-top:22px">
+        <h3>关于签名与安全</h3>
+        <p>测试版安装包尚未进行代码签名，Windows SmartScreen 会提示“未知发布者”。请仅从本官网下载，安装前可核对文件校验和。正式版将使用代码签名证书，消除该提示。</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ===== 视图：定价 ===== -->
+<section class="view" id="view-pricing" hidden>
+  <div class="hero" style="padding-bottom:56px">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:0">
+        <div class="kicker">价格与计划</div>
+        <h2>定价</h2>
+        <p>续境的核心能力始终免费：本地记忆、双端使用、自带密钥。订阅托管模型服务正在接入中，定价将在上线时公布。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:24px">
+    <div class="wrap">
+      <div class="price-grid">
+        <div class="price">
+          <div class="p-name">免费版</div>
+          <div class="p-price">¥0<small> / 永久</small></div>
+          <div class="p-note">自带 API Key 即可完整使用</div>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>本地语义记忆，GB 级档案</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>Windows 桌面 + Android</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>BYOK：DeepSeek、通义等自选模型</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>无需注册，下载即用</li>
+          </ul>
+          <button class="btn btn-primary" data-toast="安装包整理中，即将开放下载">下载免费版</button>
+        </div>
+
+        <div class="price featured">
+          <div class="pill">即将推出</div>
+          <div class="p-name">Pro 订阅</div>
+          <div class="p-price">待定<small> / 月</small></div>
+          <div class="p-note">托管模型，开箱即用</div>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>无需配置 API Key，登录即用</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>邮箱账号与跨设备权益</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>用量计量与月度额度</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>记忆仍保存在本地设备</li>
+          </ul>
+          <button class="btn" data-toast="订阅服务接入中，定价上线后开放">订阅 · 即将开放</button>
+        </div>
+
+        <div class="price">
+          <div class="pill">路线图</div>
+          <div class="p-name">自托管</div>
+          <div class="p-price">待定<small> / 月</small></div>
+          <div class="p-note">把服务部署到自己的服务器</div>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>continuum-cloud 服务端部署</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>自有模型网关与计量</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>部署文档与迁移工具</li>
+          </ul>
+          <button class="btn" data-toast="自托管部署文档正在编写">部署文档 · 编写中</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:22px;max-width:760px">
+        <h3>定价说明</h3>
+        <p>免费版的能力上限由你的模型服务商决定，续境不从中收费、也不计量。Pro 订阅的模型调用由续境代付并按用量计量，定价将覆盖模型成本；记忆、对话与私人资料在任何计划下都保存在本地设备。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 视图：隐私 ===== -->
+<section class="view" id="view-privacy" hidden>
+  <div class="hero" style="padding-bottom:56px">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:0">
+        <div class="kicker">隐私政策</div>
+        <h2>隐私与数据边界</h2>
+        <p>续境的设计前提是本地优先：你的对话与记忆留在你的设备上。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:24px">
+    <div class="wrap prose">
+      <span class="stamp">草案 · 随服务上线更新</span>
+
+      <h2>1. 我们保存什么</h2>
+      <p>对话、长期记忆、索引与私人资料保存在你的本机资料目录中，由应用本地管理，不上传续境服务器。API 密钥保存在本地凭证库。</p>
+      <p>续境服务端只承载服务控制面元数据：账号、会话、权益与用量计数。服务端不建立聊天、记忆或模型请求内容的数据表。</p>
+
+      <h2>2. 自带密钥（BYOK）</h2>
+      <p>使用自带 API Key 时，对话内容由你的客户端直接发送给你选择的模型服务商（如 DeepSeek、通义千问），受该服务商自身的政策约束。续境不中转、不保存、不计量这些请求。</p>
+
+      <h2>3. 托管模型（订阅）</h2>
+      <p>订阅托管模型后，对话请求经续境网关转发给模型服务商以提供能力，并按用量计数。该转发将在用户协议中明确告知，你可随时停用。</p>
+
+      <h2>4. 你的控制权</h2>
+      <ul>
+        <li>纠正：记忆保留来源，你可以在应用内纠正与修订资料。</li>
+        <li>删除：删除本地资料目录即清除全部对话与记忆；服务端账号数据可申请注销。</li>
+        <li>迁移：资料目录可整体迁移到其他设备。</li>
+      </ul>
+
+      <h2>5. 反馈</h2>
+      <p>反馈提交属于有意提交的数据，仅在获得单独同意后接收，保存期限与处理流程另行说明。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 视图：协议 ===== -->
+<section class="view" id="view-terms" hidden>
+  <div class="hero" style="padding-bottom:56px">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:0">
+        <div class="kicker">用户协议</div>
+        <h2>服务条款</h2>
+        <p>使用续境即表示你同意以下条款。正式版发布前为草案，将随服务上线完善。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:24px">
+    <div class="wrap prose">
+      <span class="stamp">草案 · 正式版发布前生效</span>
+
+      <h2>1. 服务描述</h2>
+      <p>续境是一款本地优先的个人智能体软件：对话、记忆、时间线与目标跟踪均在本机运行。云端服务仅用于账号、会话与权益等控制面功能。</p>
+
+      <h2>2. 账号与资料</h2>
+      <p>邮箱账号用于登录与订阅权益校验。账号数据（邮箱、会话、权益）由续境服务端保存；对话与记忆始终保存在你的设备上。账号可随时注销。</p>
+
+      <h2>3. 使用规范</h2>
+      <ul>
+        <li>不得将本软件用于任何违法目的，不得利用其生成违法内容。</li>
+        <li>不得逆向工程、反编译或绕过本软件的许可与安全机制。</li>
+        <li>不得共享、转售订阅账号或滥用自带密钥接入。</li>
+      </ul>
+
+      <h2>4. 模型输出与免责</h2>
+      <p>续境接入的模型服务由第三方提供，输出内容仅供参考，不代表续境观点。请勿将 AI 输出作为医疗、法律、财务等专业决策的唯一依据。</p>
+
+      <h2>5. 变更与终止</h2>
+      <p>条款变更将在此页面更新并标注生效日期。违反条款时，我们保留暂停账号与停止提供服务的权利。</p>
+
+      <h2>6. 联系</h2>
+      <p>如需联系，请在应用内通过反馈入口提交；反馈渠道接入后同步公布。</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===== 页脚 ===== -->
+<footer>
+  <div class="wrap">
+    <div class="copy">© 2026 续境 · Continuum Agent — 本地保存的个人智能体</div>
+    <div class="links">
+      <a href="#/home" data-nav="home">首页</a>
+      <a href="#/download" data-nav="download">下载</a>
+      <a href="#/pricing" data-nav="pricing">定价</a>
+      <a href="#/privacy" data-nav="privacy">隐私</a>
+      <a href="#/terms" data-nav="terms">协议</a>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var views = ['home','download','pricing','privacy','terms'];
+  var navLinks = document.querySelectorAll('[data-nav]');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 3200);
+  }
+
+  function current(){
+    var h = (location.hash || '').replace(/^#\//,'');
+    return views.indexOf(h) > -1 ? h : 'home';
+  }
+
+  function render(){
+    var name = current();
+    views.forEach(function(v){
+      var el = document.getElementById('view-' + v);
+      if(el){ el.hidden = (v !== name); }
+    });
+    navLinks.forEach(function(a){
+      var on = a.getAttribute('data-nav') === name;
+      a.classList.toggle('active', on);
+    });
+    window.scrollTo(0,0);
+  }
+
+  window.addEventListener('hashchange', render);
+
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-toast]');
+    if(t){ e.preventDefault(); showToast(t.getAttribute('data-toast')); }
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
